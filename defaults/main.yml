@@ -11,9 +11,9 @@ fail2ban_sendername: 'Fail2ban'
 
 fail2ban_ignoreips:
  - 127.0.0.1/8
-fail2ban_bantime: 600
+fail2ban_bantime: 3600
 fail2ban_maxretry: 3
-fail2ban_findtime: 600
+fail2ban_findtime: 120
 fail2ban_backend: auto
 fail2ban_destemail: root@localhost
 fail2ban_banaction: iptables-multiport
@@ -22,11 +22,39 @@ fail2ban_protocol: tcp
 fail2ban_chain: INPUT
 fail2ban_action: action_
 
+fail2ban_filter_paths:
+  - src: etc/fail2ban/filter.d/nginx-ddos.conf.j2
+    dest: /etc/fail2ban/filter.d/nginx-ddos.conf
+
+fail2ban_action_paths: {}
+fail2ban_jail_paths: {}
+
+fail2ban_ssh_enabled: true
+fail2ban_ssh_logpath: '/var/log/auth.log'
+fail2ban_ssh_maxtretry: '{{fail2ban_maxretry}}'
+fail2ban_ssh_find_time: '{{fail2ban_findtime}}'
+
+fail2ban_nginx_ddos_enabled: true
+fail2ban_nginx_ddos_logpath: '/var/log/nginx/*error.log'
+fail2ban_nginx_ddos_maxtretry: '{{fail2ban_maxretry}}'
+fail2ban_nginx_ddos_find_time: '{{fail2ban_findtime}}'
+fail2ban_nginx_ddos_banaction: '{{fail2ban_banaction}}'
+
 fail2ban_services:
   - name: ssh
-    enabled: true
+    enabled: '{{fail2ban_ssh_enabled}}'
     port: ssh
     filter: sshd
-    logpath: /var/log/auth.log
-    maxretry: 6
-    findtime: 600
+    logpath: '{{fail2ban_ssh_logpath}}'
+    maxretry: '{{fail2ban_ssh_maxtretry}}'
+    findtime: '{{fail2ban_ssh_find_time}}'
+
+
+  - name: nginx-ddos
+    enabled: '{{fail2ban_nginx_ddos_enabled}}'
+    filter: nginx-ddos
+    port: http, https
+    banaction: '{{fail2ban_nginx_ddos_banaction}}'
+    logpath: '{{fail2ban_nginx_ddos_logpath}}'
+    maxretry: '{{fail2ban_ssh_maxtretry}}'
+    findtime: '{{fail2ban_findtime}}'

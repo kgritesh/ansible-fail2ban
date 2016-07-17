@@ -38,14 +38,14 @@
     - fail2ban
     - fail2ban-configuration
 
-- name: copy filters
-  copy:
-    src: "{{ fail2ban_filterd_path }}"
-    dest: /etc/fail2ban/filter.d/
+- name: add/ update filters
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0644
-  when: fail2ban_filterd_path is defined
+  with_items: "{{ fail2ban_filter_paths }}"
   notify: restart fail2ban
   tags:
     - configuration
@@ -53,13 +53,13 @@
     - fail2ban-filters
 
 - name: copy actions
-  copy:
-    src: "{{ fail2ban_actiond_path }}"
-    dest: /etc/fail2ban/action.d/
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0644
-  when: fail2ban_actiond_path is defined
+  with_dict: "{{ fail2ban_action_paths }}"
   notify: restart fail2ban
   tags:
     - configuration
@@ -67,13 +67,13 @@
     - fail2ban-actions
 
 - name: copy jails
-  copy:
-    src: "{{ fail2ban_jaild_path }}"
-    dest: /etc/fail2ban/jail.d/
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }"
     owner: root
     group: root
     mode: 0644
-  when: fail2ban_jaild_path is defined
+  with_dict: "{{ fail2ban_jail_paths }}"
   notify: restart fail2ban
   tags:
     - configuration
